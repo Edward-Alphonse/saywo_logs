@@ -1,8 +1,12 @@
 package writers
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"reflect"
+	"strconv"
 	"time"
 
 	sls "github.com/aliyun/aliyun-log-go-sdk"
@@ -15,6 +19,7 @@ type ALiSLSConfig struct {
 	DNS             string
 	AccessKeyId     string
 	AccessKeySecret string
+	SecurityToken   string // RAM用户角色的临时安全令牌，值为空表示不使用临时安全令牌。
 	ProjectName     string
 	LogStoreName    string
 	Topic           string
@@ -37,11 +42,11 @@ func NewALiSLSWriter(config *ALiSLSConfig) *ALiSLSWriter {
 	}
 	accessKeyId := config.AccessKeyId
 	accessKeySecret := config.AccessKeySecret
+	securityToken := config.SecurityToken
 	endPoint := config.DNS
-	// RAM用户角色的临时安全令牌。此处取值为空，表示不使用临时安全令牌。
-	SecurityToken := ""
+
 	// 创建日志服务Client。
-	provider := sls.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, SecurityToken)
+	provider := sls.NewStaticCredentialsProvider(accessKeyId, accessKeySecret, securityToken)
 	client := sls.CreateNormalInterfaceV2(endPoint, provider)
 
 	writer := &ALiSLSWriter{
@@ -65,8 +70,9 @@ func (w *ALiSLSWriter) Write(p []byte) (n int, err error) {
 	}
 	content := []*sls.LogContent{}
 	for key, value := range m {
-		val, ok := value.(string)
-		if !ok {
+		val, err := getStringValue(value)
+		if err != nil {
+			log.Printf("ALiSLSWriter get string value failed, error: %v", err)
 			continue
 		}
 		content = append(content, &sls.LogContent{
@@ -97,4 +103,34 @@ func (w *ALiSLSWriter) Write(p []byte) (n int, err error) {
 
 func (w *ALiSLSWriter) Sync() error {
 	return nil
+}
+
+func getStringValue(value any) (string, error) {
+	vt := reflect.TypeOf(value)
+	numberType := reflect.TypeOf(json.Number(""))
+	var val string
+	switch vt.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		val = fmt.Sprintf("%d", value)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		val = fmt.Sprintf("%d", value)
+	case reflect.String:
+		if vt.AssignableTo(numberType) {
+			value = value.(json.Number).String()
+		}
+		val = value.(string)
+	case reflect.Float32, reflect.Float64:
+		val = fmt.Sprintf("%f", value)
+	case reflect.Bool:
+		val = strconv.FormatBool(value.(bool))
+	case reflect.Array, reflect.Map, reflect.Struct:
+		bytes, err := json.Marshal(value)
+		if err != nil {
+			return "", fmt.Errorf("ALiSLSWriter write failed, err: %v", err)
+		}
+		val = string(bytes)
+	default:
+		return "", fmt.Errorf("Unknown type: %v", vt)
+	}
+	return val, nil
 }
