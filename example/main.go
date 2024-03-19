@@ -8,6 +8,11 @@ import (
 	"saywo_logs/writers"
 )
 
+type User struct {
+	A int
+	B *User
+}
+
 func main() {
 
 	config := &writers.ALiSLSConfig{
@@ -22,9 +27,16 @@ func main() {
 	err := errors.New("1234")
 	err = errors.Wrap(err, "FinishedCountStorage get value failed")
 
+	user := User{
+		A: 10,
+		B: &User{
+			A: 7,
+		},
+	}
 	saywo_logs.Error("这是一个报错", map[string]any{
 		"user_id":    1234456789,
 		"article_id": 345645678900123456,
 		"error":      err.Error(),
+		"user":       &user,
 	})
 }

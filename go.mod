@@ -1,9 +1,10 @@
-module saywo_logs
+module github.com/Edward-Alphonse/saywo_logs
 
 go 1.20
 
 require (
 	github.com/aliyun/aliyun-log-go-sdk v0.1.71
+	github.com/bitly/go-simplejson v0.5.1
 	github.com/gogo/protobuf v1.3.2
 	github.com/pkg/errors v0.9.1
 	go.uber.org/zap v1.27.0
@@ -11,7 +12,6 @@ require (
 )
 
 require (
-	github.com/bitly/go-simplejson v0.5.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/go-kit/kit v0.13.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
