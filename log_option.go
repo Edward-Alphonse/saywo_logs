@@ -1,9 +1,9 @@
 package saywo_logs
 
 import (
+	"github.com/Edward-Alphonse/saywo_logs/writers"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"saywo_logs/writers"
 )
 
 type LogOption interface {

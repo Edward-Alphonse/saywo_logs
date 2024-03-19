@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
+	"github.com/Edward-Alphonse/saywo_logs"
+	"github.com/Edward-Alphonse/saywo_logs/writers"
 	"github.com/pkg/errors"
-	"saywo_logs"
-	"saywo_logs/writers"
 )
 
 type User struct {
