@@ -24,6 +24,11 @@ func main() {
 		Topic:           "test",
 	}
 	saywo_logs.Register(saywo_logs.FileLog(nil), saywo_logs.ALiSLS(config))
+	saywo_logs.Info("这是一个Info", []saywo_logs.Field{
+		{"config": config},
+		{"test": "test"},
+	}...)
+
 	err := errors.New("1234")
 	err = errors.Wrap(err, "FinishedCountStorage get value failed")
 
@@ -33,10 +38,11 @@ func main() {
 			A: 7,
 		},
 	}
-	saywo_logs.Error("这是一个报错", map[string]any{
+	saywo_logs.Error("这是一个报错", saywo_logs.Field{
 		"user_id":    1234456789,
 		"article_id": 345645678900123456,
 		"error":      err.Error(),
 		"user":       &user,
 	})
+	saywo_logs.Debug("这是一个debug")
 }

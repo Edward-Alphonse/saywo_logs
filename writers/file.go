@@ -55,5 +55,5 @@ func getWriterSyncer(config *FileConfig) zapcore.WriteSyncer {
 }
 
 func getLogFileName() string {
-	return fmt.Sprintf("_logfile.log")
+	return fmt.Sprintf("_log.log")
 }
