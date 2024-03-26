@@ -19,16 +19,26 @@ func main() {
 		DNS:             "cn-wuhan-lr.log.aliyuncs.com",
 		AccessKeyId:     os.Getenv("ALIBABA_CLOUD_ACCESS_KEY_ID"),
 		AccessKeySecret: os.Getenv("ALIBABA_CLOUD_ACCESS_KEY_SECRET"),
-		ProjectName:     "hzc-test-1",
-		LogStoreName:    "aliyun-test-logstore",
+		Project:         "hzc-test-1",
+		LogStore:        "aliyun-test-logstore",
 		Topic:           "test",
+		Level:           writers.DebugLevel,
 	}
-	saywo_logs.Register(saywo_logs.FileLog(nil), saywo_logs.ALiSLS(config))
+	fileConfig := &writers.FileConfig{
+		Path:       writers.LogPath,
+		MaxSize:    10,
+		MaxBackups: 10,
+		MaxAge:     30,
+		Compress:   true,
+		Level:      writers.DebugLevel,
+	}
+	saywo_logs.Register(saywo_logs.FileLog(fileConfig), saywo_logs.ALiSLS(config))
+	saywo_logs.Debug("这是一个Debug")
 	saywo_logs.Info("这是一个Info", []saywo_logs.Field{
 		{"config": config},
 		{"test": "test"},
 	}...)
-
+	saywo_logs.Warn("这是一个Warn")
 	err := errors.New("1234")
 	err = errors.Wrap(err, "FinishedCountStorage get value failed")
 
@@ -44,5 +54,4 @@ func main() {
 		"error":      err.Error(),
 		"user":       &user,
 	})
-	saywo_logs.Debug("这是一个debug")
 }

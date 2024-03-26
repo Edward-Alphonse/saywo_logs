@@ -20,15 +20,17 @@ type ALiSLSConfig struct {
 	AccessKeyId     string
 	AccessKeySecret string
 	SecurityToken   string // RAM用户角色的临时安全令牌，值为空表示不使用临时安全令牌。
-	ProjectName     string
-	LogStoreName    string
+	Project         string
+	LogStore        string
 	Topic           string
+	Level           Level
 }
 
 func NewALiLogCore(config *ALiSLSConfig) zapcore.Core {
 	writeSyncer := NewALiSLSWriter(config)
 	encoder := getEncoder()
-	return zapcore.NewCore(encoder, writeSyncer, InfoLevel)
+	lvl := GetZapCoreLevel(config.Level)
+	return zapcore.NewCore(encoder, writeSyncer, lvl)
 }
 
 type ALiSLSWriter struct {
@@ -87,11 +89,11 @@ func (w *ALiSLSWriter) Write(p []byte) (n int, err error) {
 
 	loggroup := &sls.LogGroup{
 		Topic:  proto.String(w.config.Topic),
-		Source: proto.String("203.0.113.10"),
+		Source: proto.String("203.0.113.10"), // todo：使用服务器IP
 		Logs:   []*sls.Log{logMsg},
 	}
 
-	err = w.client.PutLogs(w.config.ProjectName, w.config.LogStoreName, loggroup)
+	err = w.client.PutLogs(w.config.Project, w.config.LogStore, loggroup)
 	if err != nil {
 		log.Fatalf("PutLogs failed %v", err)
 		os.Exit(1)

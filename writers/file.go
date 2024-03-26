@@ -20,6 +20,7 @@ type FileConfig struct {
 	MaxBackups int    // 已被分割存储的日志文件最多的留存个数，单位是个
 	MaxAge     int    // 已被分割存储的日志文件最大的留存时间，单位是天
 	Compress   bool   //指定被分割之后的文件是否要压缩
+	Level      Level  //日志等级输入控制
 }
 
 func NewFileCore(config *FileConfig) zapcore.Core {
@@ -28,17 +29,19 @@ func NewFileCore(config *FileConfig) zapcore.Core {
 	}
 	writeSyncer := getWriterSyncer(config)
 	encoder := getEncoder()
-	core := zapcore.NewCore(encoder, writeSyncer, InfoLevel)
+	lvl := GetZapCoreLevel(config.Level)
+	core := zapcore.NewCore(encoder, writeSyncer, lvl)
 	return core
 }
 
 func getDefaultConfig() *FileConfig {
 	config := &FileConfig{
-		Path:       logPath,
+		Path:       LogPath,
 		MaxSize:    10,
 		MaxBackups: 10,
 		MaxAge:     30,
 		Compress:   true,
+		Level:      InfoLevel,
 	}
 	return config
 }

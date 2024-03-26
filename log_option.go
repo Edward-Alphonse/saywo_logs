@@ -39,6 +39,13 @@ func consoleErrorLog() LogOption {
 	return LogOptionFunc(function)
 }
 
+func DebugLog() LogOption {
+	function := func() zapcore.Core {
+		return writers.DebugConsoleCore()
+	}
+	return LogOptionFunc(function)
+}
+
 func FileLog(config *writers.FileConfig) LogOption {
 	return LogOptionFunc(func() zapcore.Core {
 		return writers.NewFileCore(config)

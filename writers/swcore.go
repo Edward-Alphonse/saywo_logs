@@ -8,20 +8,21 @@ import (
 // 直接复制的zapCore的ioCore的实现，以后自定义再说，目前可以平替zapCore.NewCore
 // github上另外的实现，https://github.com/yeyudekuangxiang/zap-aliyun-log
 type SwCore struct {
-	level Level
+	level zapcore.Level
 	enc   zapcore.Encoder
 	out   zapcore.WriteSyncer
 }
 
 func NewSwCore(enc zapcore.Encoder, ws zapcore.WriteSyncer, level Level) zapcore.Core {
+	lvl := GetZapCoreLevel(level)
 	return &SwCore{
 		enc:   enc,
 		out:   ws,
-		level: level,
+		level: lvl,
 	}
 }
 
-func (c *SwCore) Enabled(level Level) bool {
+func (c *SwCore) Enabled(level zapcore.Level) bool {
 	return level >= c.level
 }
 
@@ -49,7 +50,7 @@ func (c *SwCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
 	if err != nil {
 		return err
 	}
-	if ent.Level > ErrorLevel {
+	if ent.Level > zapcore.ErrorLevel {
 		_ = c.Sync()
 	}
 	return nil
